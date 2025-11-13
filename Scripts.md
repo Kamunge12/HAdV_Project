@@ -247,6 +247,13 @@ do
     fi
 done
 ```
+# checking the sorted mapped files by minimap2 have no coruptions
+```
+for bam in /home/KWTRP/gkamunge/ADENO_ENTERIC/mapped/mapped_sorted/*.bam; do
+    samtools quickcheck -v "$bam" || echo "Corrupted: $bam"
+done
+```
+
 
 
 

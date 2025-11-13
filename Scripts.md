@@ -26,6 +26,54 @@ for f in /home/KWTRP/gkamunge/ADENO_ENTERIC/ref_adeno/*.fasta.bgz;do
     fi
 done
 ```
+# mapping with minimap2
+```
+#!/bin/bash
+
+#load samtools
+module load samtools/1.18
+# module load minimap2  # Uncomment and adjust version if needed
+
+# Number of threads
+threads=8
+
+#output directory
+mkdir -p /home/KWTRP/gkamunge/ADENO_ENTERIC/mapped_minimap
+
+# Define paths
+output_dir="/home/KWTRP/gkamunge/ADENO_ENTERIC/mapped_minimap"
+adeno_reads="/home/KWTRP/gkamunge/ADENO_ENTERIC/adeno_data"
+ref_dir="/home/KWTRP/gkamunge/ADENO_ENTERIC/mapped_minimap/reference"
+
+#processing the files fastq ones
+for fastq_file in "$adeno_reads"/*.fastq.gz; do
+    # Getting filename without extension
+    filename=$(basename "$fastq_file" .fastq.gz)
+
+    #Processing reference genomes
+    for ref_file in "$ref_dir"/*.fasta.gz; do
+        # Getting reference filename without extension
+        refname=$(basename "$ref_file" .fasta.gz)
+
+        # Creating output name BAM
+        output_bam="${filename}_vs_${refname}.bam"
+
+        echo "Aligning $filename to $refname "
+
+        #running alignment
+        minimap2 -ax map-ont -t $threads "$ref_file" "$fastq_file" | samtools view -b -o "$output_dir/$output_bam" -
+        
+        if [ $? -eq 0 ]; then
+            echo "Saved as: $output_bam"
+        else
+            echo "Alignment failed for $filename vs $refname"
+        fi
+    done
+done
+
+echo "Mapping complete."
+```
+
 
 # gzipping fasta.gz refernce files
 ```

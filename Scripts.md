@@ -24,9 +24,9 @@ for f in /home/KWTRP/gkamunge/ADENO_ENTERIC/ref_adeno/*.fasta.bgz;do
     else
        echo " failed to index:$f"
     fi
+done
 ```
 
-done
 # gzipping fasta.gz refernce files
 ```
 for f in *.fasta.gz; do gunzip -c "$f" | bgzip > temp && mv temp "$f"; done
@@ -99,6 +99,30 @@ for fastq_file in "$adeno_reads"/*.fastq.gz; do
 
         echo "Saved as: $output_bam"
     done
+```
+# sorting and indexing bam files
+```
+module load samtools/1.18
+
+input_dir="/home/KWTRP/gkamunge/ADENO_ENTERIC/mapped"
+output_dir="/home/KWTRP/gkamunge/ADENO_ENTERIC/mapped/mapped_sorted"
+
+mkdir -p "$output_dir"
+
+for bam in "$input_dir"/*.bam
+do
+  name=$(basename "$bam" .bam)
+  echo "Sorting: $bam"
+  samtools sort -@ 8 "$bam" -o "$output_dir/${name}_sorted.bam"
+  if [ $? -eq 0 ]; then
+        echo "Indexing: ${name}_sorted.bam"
+        samtools index "$output_dir/${name}_sorted.bam"
+        echo "Done: ${name}_sorted.bam"
+    else
+        echo "Error sorting $bam"
+        exit 1
+    fi
+done
 ```
 
 

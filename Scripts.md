@@ -130,5 +130,46 @@ for bam in /home/KWTRP/gkamunge/ADENO_ENTERIC/mapped/mapped_sorted/*.bam; do
     samtools quickcheck -v "$bam" || echo "Corrupted: $bam"
 done
 ```
+# Summary of the bam files
+```
+for bam in /home/KWTRP/gkamunge/ADENO_ENTERIC/mapped/mapped_sorted/*.bam; do     echo " Stats for $bam";     samtools flagstat "$bam" > "${bam%.bam}_flagstat.txt"; done
+```
+# coverage statistics of the bam files
+```
+for bam in *.bam; do
+    echo "Coverage for $bam"
+    samtools depth "$bam" | awk '{sum+=$3} END {print "Average coverage =", sum/NR}' > "${bam%.bam}_coverage.txt"
+done
+```
+# Mapping stats summary-csv
+```
+#!/bin/bash
+
+output="mapping_summary.csv"
+echo "sample,total_reads,mapped_reads,mapped_percent,properly_paired,avg_coverage" > "$output"
+
+for flagstat in *_flagstat.txt; do
+    sample=${flagstat%_flagstat.txt}
+    coverage_file="${sample}_coverage.txt"
+
+    # Extract data from flagstat
+    total_reads=$(grep "in total" "$flagstat" | awk '{print $1}')
+    mapped_reads=$(grep "mapped (" "$flagstat" | head -n1 | awk '{print $1}')
+    mapped_percent=$(grep "mapped (" "$flagstat" | head -n1 | awk -F'[()%]' '{print $2}')
+    properly_paired=$(grep "properly paired" "$flagstat" | awk '{print $1}')
+
+    # Extract average coverage value
+    if [ -f "$coverage_file" ]; then
+        avg_cov=$(awk '{print $4}' "$coverage_file")
+    else
+        avg_cov="NA"
+    fi
+
+    echo "${sample},${total_reads},${mapped_reads},${mapped_percent},${properly_paired},${avg_cov}" >> "$output"
+done
+
+echo " Summary written to: $output"
+```
+
 
 

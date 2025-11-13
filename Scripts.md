@@ -124,6 +124,11 @@ do
     fi
 done
 ```
-
+# checking if the sorted files are corrupted and okay
+```
+for bam in /home/KWTRP/gkamunge/ADENO_ENTERIC/mapped/mapped_sorted/*.bam; do
+    samtools quickcheck -v "$bam" || echo "Corrupted: $bam"
+done
+```
 
 
